@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="with=device-width, initial-scale=1.0">
+        <title>DND Website</title>
+        <link rel="stylesheet" href="DNDWebsite.css">
+
+        <!--This handles all the fonts-->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+
+    <body>
+        <section class="header">
+            <nav>
+            </nav> 
+            <h1>DND Website</h1><a href = "DNDWebsite.html" class="ReturnBtn">Return Home</a>
+        </section>
+
+
+        <section class="MonsterDisplay">
+            <div class="MonsterGeneral">
+                <h1>Zombie</h1>
+                <h2><i>Medium Undead, Neutral Evil</i></h2>
+                <p><br><b>AC </b>8
+                <br><b>Hit Points </b> 22 <b onclick="RollItem(9,'Health Points', 8, 3)" style="cursor: pointer;">(3d8 + 9)</b>
+                <br><b>Speed </b> 20ft
+                </p>
+            </div>
+
+            <div class="MonsterStatTable">
+                <style>
+                    table, th, td{
+                        border: 2px solid #cad670;
+                        border-radius: 5px;
+                    }
+                </style>
+
+                <table style="width:550px">
+                    <tr>
+                        <th>STR</th>
+                        <th>DEX</th>
+                        <th>CON</th>
+                        <th>INT</th>
+                        <th>WIS</th>
+                        <th>CHA</th>
+                    </tr>
+                    <tr>
+                        <th onclick="RollItem(1, 'STR Check')" class="MonsterStatTableCell">13 (+1)</th>
+                        <th onclick="RollItem(-2,'DEX Check')" class="MonsterStatTableCell">6 (-2)</th>
+                        <th onclick="RollItem(3,'CON Check')" class="MonsterStatTableCell">16 (+3)</th>
+                        <th onclick="RollItem(-4,'INT Check')" class="MonsterStatTableCell">3 (-4)</th>
+                        <th onclick="RollItem(-2,'WIS Check')" class="MonsterStatTableCell">6 (-2)</th>
+                        <th onclick="RollItem(-3,'CHA Check')" class="MonsterStatTableCell">5 (-3)</th>
+                    </tr>
+                    <tr>
+                        <th onclick="RollItem( 1,'STR Save')" class="MonsterStatTableCell">+1</th>
+                        <th onclick="RollItem(-2,'DEX Save')" class="MonsterStatTableCell">-2</th>
+                        <th onclick="RollItem(3 ,'CON Save')" class="MonsterStatTableCell">+3</th>
+                        <th onclick="RollItem(-4,'INT Save')" class="MonsterStatTableCell">-4</th>
+                        <th onclick="RollItem(0,'WIS Save')" class="MonsterStatTableCell">+0</th>
+                        <th onclick="RollItem(-3,'CHA Save')" class="MonsterStatTableCell">-3</th>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="MonsterAbilities">
+                <p>
+                    <b>Saving Throws</b> WIS +0
+                    <br><b>Damage Immunities</b> Poison
+                    <br><b>Condition Immunities</b> Poisoned
+                    <br><b>Senses</b> Darkvision 60ft, Passive Perception 8
+                    <br><b>Languages</b> Understands those it spoke in life but cannot speak
+                    <br><b>CR </b> 1/4 (50xp)           <b>Proficency Bonus</b> +2
+                </p>
+            </div>
+
+            <div class="MonsterTraits">
+                <p>
+                    <b>Undead Fortitude</b> If damage reduces the zombie to 0 hp,
+                    it must make a Con. saving throw with a DC of 5 + the damage
+                    taken, unless the damage is radiant or from a critical hit.
+                    On a success, the zombie drops to 1hp instead.
+                </p>
+            </div>
+
+            <div class="MonsterActions">
+                <p>
+                    <b>Slam</b> <i>Melee Weapon Attack: </i> <b onclick="RollItem( 3,'To Hit')" style="cursor: pointer;"> +3 </b> to hit, reach 5ft, one
+                    target. <i>Hit: </i> <b onclick="RollItem( 1,'Damage (bludgeoning)', 6)" style="cursor: pointer;">4(1d6 + 1)</b> bludgeoning damage.
+                </p>
+            </div>
+
+            <div class = "RolledOutput" id = "RollOutput" onclick="RollItemDisappear()">
+                <p>
+                    <b>Generated Number : </b>
+                </p>
+            </div>
+
+        </section>
+        
+
+    </body>
+
+    <script>
+
+        var rollHTML = document.getElementById("RollOutput")
+
+
+        function RollItem(modifier, checkType, diceSides = 20, diceNum = 1){
+            rolledValue = 0;
+            rolledValues = [];
+            for(let i = 0; i < diceNum; i++)
+            {   
+                newValue = Math.trunc(Math.random() * diceSides) + 1
+                rolledValue += newValue;
+                rolledValues.push(newValue)
+                
+            }
+              
+            rollHTML.innerHTML = `${checkType}: ${String(rolledValue + modifier)} (${String(rolledValues)})`;
+
+            rollHTML.style.right = "0";
+            rollHTML.style.visibility = "visible";
+        }
+
+        function RollItemDisappear(){
+            rollHTML.style.visibility = "hidden";
+            rollHTML.innerHTML = "Bye";
+        }
+        
+
+    </script>
+
+</html>

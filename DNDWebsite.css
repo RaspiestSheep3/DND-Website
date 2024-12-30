@@ -1,0 +1,181 @@
+*{
+    margin:0;
+    padding: 0;
+    font-family: "Roboto Mono", serif; /*font to use*/
+    background-color: #1e2029;
+}
+
+/*HEADER*/
+
+.header {
+    margin: auto;
+    width: 100%;
+    padding: 10px;
+    min-height: 100px;
+    text-align: center;
+    background-color: #16161c;
+  }
+
+.header h1{
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+    text-align: center;
+    color:#a3c255;
+    font-size: 60px;
+    border: 3px solid #a3c255;
+    border-radius: 20px;
+    background-color: #16161c;
+}
+
+/*SEARCH*/
+.search{
+    margin: auto;
+    width: 100%;
+    padding: 10px;
+    min-height: 100px;
+    text-align: center;
+}
+.search h1{
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+    text-align: center;
+    color:#e8f1a6;
+    font-size: 20px;
+}
+
+#myInput{
+    width: 20%; /* Full-width */
+    font-size: 16px; /* Increase font-size */
+    padding: 12px 20px 12px 40px; /* Add some padding */
+    border: 1px solid #2d5c56; /* Add a grey border */
+    margin-bottom: 12px; /* Add some space below the input */
+    background: #2d5c56;
+    color: #e8f1a6;
+    border-radius: 10px;
+}
+
+#myUL {
+    /* Remove default list styling */
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    width: 20%;
+    margin: auto;
+    text-align: center;
+}
+
+#myUL li a {
+    border: 1px solid #cad670; /* Add a border to all links */
+    margin-top: 3px; /* Prevent double borders */
+    background-color: #1f3741; /* Grey background color */
+    padding: 6px; /* Add some padding */
+    text-decoration: none; /* Remove default text underline */
+    font-size: 18px; /* Increase the font-size */
+    color: #cad670; /* Add a black text color */
+    display: block; /* Make it into a block element to fill the whole list */
+    border-radius: 10px;
+    transition: 0.2s;
+}
+
+#myUL li a:hover {
+   text-decoration: underline;
+   font-size: 24px;
+   font-weight: 1000;
+   background-color: #2d5c56;
+}
+
+
+/*Monster Table*/
+.header h1{
+    display: inline-block;
+}
+
+.header a{
+    float: right;
+    border: 2px solid #cad670;
+    color: #cad670;
+    height: 40px;
+    margin-top: 40px;
+    margin-right: 80px;
+    padding: 10px 5px 0 ;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.header a:hover{
+    text-decoration: underline;
+   font-size: 20px;
+   font-weight: 1000;
+   background-color: #2d5c56;
+}
+
+.MonsterDisplay{
+    color: #cad670;
+    padding: 10px 10px;
+    width: 30%;
+}
+
+.MonsterGeneral{
+    border: 2px solid #cad670;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    padding-left: 10px;
+}
+
+.MonsterGeneral h1{
+    
+    font-size: 40px;
+}
+
+.MonsterGeneral h2{
+    font-size: 20px;
+}
+
+.MonsterStatTable{
+    padding-left: 10px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.MonsterAbilities{
+    padding-left: 10px;
+    border: 2px solid #cad670;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.MonsterTraits{
+    padding-left: 10px;
+    border: 2px solid #cad670;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.MonsterActions{
+    padding-left: 10px;
+    border: 2px solid #cad670;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.RolledOutput{
+    padding-left: 10px;
+    border: 2px solid #cad670;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    visibility: hidden;
+}
+
+.MonsterStatTableCell{
+    transition: 0.3s;
+}
+
+.MonsterStatTableCell:hover{
+    text-decoration: underline;
+   font-weight: 1000;
+   background-color: #2d5c56;
+}
