@@ -1,157 +1,322 @@
-#!DO NOT TOUCH THIS
-healthPoints = r"'Health Points'"
+import re
+print("working")
+import re
 
-strCheck = r"'STR Check'"
-dexCheck = r"'DEX Check'"
-conCheck = r"'CON Check'"
-intCheck = r"'INT Check'"
-wisCheck = r"'WIS Check'"
-chaCheck = r"'CHA Check'"
+def extract_stat_block(text):
+    # Clean up text: Remove all whitespaces, newlines, and join into a single line
+    text = re.sub(r'\s+', ' ', text)
 
-strSave = r"'STR Save'"
-dexSave = r"'DEX Save'"
-conSave = r"'CON Save'"
-intSave = r"'INT Save'"
-wisSave = r"'WIS Save'"
-chaSave = r"'CHA Save'"
+    monster_data = {}
 
-toHit = r"'To Hit'"
+    # Extracting Monster Name and Type (Assumes it's the first two words before 'Armor Class')
+    name_type_pattern = re.compile(r'^(.*?)Armor Class')
+    name_type_match = name_type_pattern.search(text)
+    if name_type_match:
+        name_type_string = name_type_match.group(1).strip()
+        name_parts = name_type_string.split(" ", 1)  # Split into name and the rest
+        monster_data["name"] = name_parts[0]  # The first word is the name
+        monster_data["typeAlignment"] = name_parts[1] if len(name_parts) > 1 else "Unknown"  # Default value if no type
+    else:
+        monster_data["name"] = "Unknown"
+        monster_data["typeAlignment"] = "Unknown"
 
-emptyString = ""
+    # Extracting Armor Class (AC)
+    ac_pattern = re.compile(r'Armor Class (\d+)')
+    ac_match = ac_pattern.search(text)
+    if ac_match:
+        monster_data["AC"] = ac_match.group(1).strip()
+    else:
+        monster_data["AC"] = "N/A"  # Default value if AC not found
 
-damageTypes = {
-    "b" : r"'Damage (Bludgeoning)'",
-    "s" : r"'Damage (Slashing)'",
-    "pe": r"'Damage (Piercing)'",
-    "a" : r"'Damage (Acid)'",
-    "c" : r"'Damage (Cold)'",
-    "fi": r"'Damage (Fire)'",
-    "fo": r"'Damage (Bludgeoning)'",
-    "l" : r"'Damage (Lightning)'",
-    "n" : r"'Damage (Necrotic)'",
-    "ps": r"'Damage (Psychic)'",
-    "r" : r"'Damage (Radiant)'",
-    "t" : r"'Damage (Thunder)'",
-}
+    # Extracting Hit Points (e.g., 22 (3d8 + 9))
+    hp_pattern = re.compile(r'Hit Points (\d+) \((\d+)d(\d+) \+ (\d+)\)')
+    hp_match = hp_pattern.search(text)
+    if hp_match:
+        monster_data["hitPoints"] = [hp_match.group(1).strip(), int(hp_match.group(2)), int(hp_match.group(3)), int(hp_match.group(4))]
+    else:
+        monster_data["hitPoints"] = ["N/A", 0, 0, 0]  # Default value if Hit Points not found
 
-name = "Zombie" #Monster Name e.g. Zombie
-typeAlignment = "Medium Undead, Neutral Evil" #Monster Type and Alignment e.g. Medium Undead, Neutral Evil
-AC = "" #AC e.g. 8
-hitPoints = ["22",3,8,9] #Base HP, Roll e.g. ["22",3,8,9] = 3d8 + 9
-speed = "" #Movespeed e.g. 20ft
-stats = [13,6,16,3,6,5] #stats e.g. 13 6 16 3 6 5
-saveMods = [0,0,0,0,2,0] #save modifiers e.g. 0 0 0 0 2 0
-savingThrows = "" #saving throw text e.g. WIS +0, write None if none
-damageVulnerabilities = "" #Vulnerabilities, write None if none
-damageResistances = "" #Resistances, write None if none
-damageImmunities = "" #Immunities, write None if none
-conditionImmunities = "" #Condition immunities, write None if none
-senses = "" #Senses, write None if none
-languages = "" #Languages, write None if none
-cr = "" #CR
-profBonus = "" #Prof bonus
-traits = [["Undead Fortitude", "If damage reduces the zombie to 0 hp, it must make a Con. saving throw with a DC of 5 + the damage taken, unless the damage is radiant or from a critical hit. On a success, the zombie drops to 1hp instead."]] #Trait list, e.g. [["Undead Fortitude", "If damage reduces the zombie to 0 hp, it must make a Con. saving throw with a DC of 5 + the damage taken, unless the damage is radiant or from a critical hit. On a success, the zombie drops to 1hp instead."]]
-#NOTE : YOU HAVE TO MANUALLY INPUT THE ROLL FUNCTION FOR TRAITS DO NOT SCREW THIS UP IF YOU CANNOT TELL ME AND ILL DO IT
+    # Extracting Speed
+    speed_pattern = re.compile(r'Speed (\d+\s?[a-zA-Z]+)')
+    speed_match = speed_pattern.search(text)
+    if speed_match:
+        monster_data["speed"] = speed_match.group(1).strip()
+    else:
+        monster_data["speed"] = "30"  # Default value if Speed not found
 
-actions = [["Slam",fr'<i>Melee Weapon Attack: </i> <b onclick="RollItem( 3,{toHit})" style="cursor: pointer;"> +3 </b> to hit, reach 5ft, one target. <i>Hit: </i> <b onclick="RollItem( 1,{damageTypes["b"]}, 6)" style="cursor: pointer;">4(1d6 + 1)</b> bludgeoning damage.']] 
-#Action list e.g. [["Slam","<i>Melee Weapon Attack: </i> <b onclick="RollItem( 3,'To Hit')" style="cursor: pointer;"> +3 </b> to hit, reach 5ft, one target. <i>Hit: </i> <b onclick="RollItem( 1,'Damage (bludgeoning)', 6)" style="cursor: pointer;">4(1d6 + 1)</b> bludgeoning damage."]]
-#NOTE : YOU HAVE TO MANUALLY INPUT THE ROLL FUNCTION FOR ACTIONS DO NOT SCREW THIS UP IF YOU CANNOT TELL ME AND ILL DO IT
+    # Extracting Stats: STR, DEX, CON, INT, WIS, CHA
+    stats_pattern = re.compile(r'STR (\d+)\s\(\+?([-+]?\d+)\)\sDEX (\d+)\s\(\+?([-+]?\d+)\)\sCON (\d+)\s\(\+?([-+]?\d+)\)\sINT (\d+)\s\(\+?([-+]?\d+)\)\sWIS (\d+)\s\(\+?([-+]?\d+)\)\sCHA (\d+)\s\(\+?([-+]?\d+)\)')
+    stats_match = stats_pattern.search(text)
+    if stats_match:
+        monster_data["stats"] = [int(stats_match.group(i)) for i in range(1, 13, 2)]
+        monster_data["modifiers"] = [int(stats_match.group(i)) for i in range(2, 14, 2)]
+    else:
+        monster_data["stats"] = [0, 0, 0, 0, 0, 0]  # Default stats if not found
+        monster_data["modifiers"] = [0, 0, 0, 0, 0, 0]  # Default modifiers if not found
+
+    # Extracting Saving Throws, Damage Immunities, Condition Immunities, and other data
+    saving_throws_pattern = re.compile(r'Saving Throws ([A-Za-z]+) ([+-]?\d+)')
+    saving_throws_match = saving_throws_pattern.search(text)
+    if saving_throws_match:
+        monster_data["savingThrows"] = f'{saving_throws_match.group(1)} {saving_throws_match.group(2)}'
+    else:
+        monster_data["savingThrows"] = "N/A"  # Default value if not found
+
+    damage_immunities_pattern = re.compile(r'Damage Immunities ([A-Za-z]+)')
+    damage_immunities_match = damage_immunities_pattern.search(text)
+    if damage_immunities_match:
+        monster_data["damageImmunities"] = damage_immunities_match.group(1)
+    else:
+        monster_data["damageImmunities"] = "N/A"  # Default value if not found
+
+    condition_immunities_pattern = re.compile(r'Condition Immunities ([A-Za-z]+)')
+    condition_immunities_match = condition_immunities_pattern.search(text)
+    if condition_immunities_match:
+        monster_data["conditionImmunities"] = condition_immunities_match.group(1)
+    else:
+        monster_data["conditionImmunities"] = "N/A"  # Default value if not found
+
+    # Additional information (such as Traits, Actions, etc.)
+    monster_data["traits"] = []
+    monster_data["actions"] = []
+    traits_pattern = re.compile(r'Traits ([A-Za-z0-9\s.,+\-]+?)(?=Actions|$)')
 
 
-def CalculateStat(stat):
-    stat -= 10
-    output = str(stat // 2)
-    if(int(output) > -1):
-        output = "+" + output
+    traits_match = traits_pattern.search(text)
+    if traits_match:
+        monster_data["traits"] = [trait.strip() for trait in traits_match.group(1).split('\n') if trait]
+    else:
+        monster_data["traits"] = ["N/A"]  # Default value if Traits not found
+    actions_pattern = re.compile(r'Actions\s*(.*)', re.DOTALL)  # Match everything after "Actions"
+    actions_match = actions_pattern.search(text)
+    if actions_match:
+        actions_text = actions_match.group(1).strip()
+
+        # This function will convert a dice roll to the clickable format
+        def make_dice_clickable(action_text):
+            # Look for patterns like '1d6', '2d8', etc.
+            def replace_dice(match):
+                # Extract components from the matched text (e.g., '1d6')
+                dice = match.group(1)  # '1d6'
+                dice_amount, dice_sides = dice.split('d')  # Split into '1' and '6'
+                
+                # Look for the words after the dice roll (e.g., 'bludgeoning damage')
+                damage_type_match = re.search(r'(\w+)\s+damage', action_text)
+                damage_type = damage_type_match.group(1) if damage_type_match else 'damage'
+
+                # Return the clickable HTML without introducing <br> tags
+                return f'<b onclick="RollItem( {dice_amount}, \'Damage ({damage_type})\', {dice_sides})" style="cursor: pointer;">{dice}</b>'
+
+            # Use the replace_dice function to convert all 'd' rolls
+            action_text = re.sub(r'(\d+d\d+)', replace_dice, action_text)
+
+            return action_text
+
+        # Apply the function to make dice clickable
+        monster_data["actions"] = make_dice_clickable(actions_text)
+    else:
+        monster_data["actions"] = "No actions found."
     
-    return output
+    languages_pattern = re.compile(r'Languages\s*(.*?)\s*(?=Challenge|$)')
+    languages_match = languages_pattern.search(text)
+    if languages_match:
+        monster_data["languages"] = languages_match.group(1).strip()
+    else:
+        monster_data["languages"] = "None"
 
-def CalculateModifier(stat, modifier):
-    stat -= 10
-    output = (stat // 2)
-    output += modifier
-    output = str(output)
-    if(int(output) > -1):
-        output = "+" + output
+    # Extracting CR (Challenge Rating)
+    cr_pattern = re.compile(r'Challenge\s*(\d+/\d+|\d+)')
+    cr_match = cr_pattern.search(text)
+    if cr_match:
+        monster_data["CR"] = cr_match.group(1).strip()
+    else:
+        monster_data["CR"] = "Not available"
 
-    return output
+    # Extracting Proficiency Bonus
+    proficiency_bonus_pattern = re.compile(r'Proficiency Bonus\s*(\+\d+)')
+    proficiency_bonus_match = proficiency_bonus_pattern.search(text)
+    if proficiency_bonus_match:
+        monster_data["proficiency_bonus"] = proficiency_bonus_match.group(1).strip()
+    else:
+        monster_data["proficiency_bonus"] = "Not available"
 
-print(int(CalculateStat(stats[1])) + saveMods[1])
+    return monster_data
 
-fileHandle = open("DNDStatBlockWriterOutput.txt", "w")
+# Sample text (for testing)
+monster_text = """Medium Undead, Neutral Evil
 
-fileHandle.write(f'<section class="MonsterDisplay">\n   <div class="MonsterGeneral">\n')
-fileHandle.write(f'        <h1>{name}</h1>\n        <h2><i>{typeAlignment}<\i></h2>\n')
-fileHandle.write(f'        <p><br><b>AC </b>{13}\n')
-fileHandle.write(f'        <br><b>Hit Points </b> {hitPoints[0]} <b onclick="RollItem({hitPoints[3]},{healthPoints}, {hitPoints[2]}, {hitPoints[1]})" style="cursor: pointer;">({hitPoints[1]}d{hitPoints[2]} + {hitPoints[3]})</b>\n')
-fileHandle.write(f'        <br><b>Speed </b> {speed}\n')
-fileHandle.write(f'        </p>\n')
-fileHandle.write(f'   </div>\n\n')
-fileHandle.write(f'   <div class="MonsterStatTable">\n')
-fileHandle.write(f'        <style>\n')
-fileHandle.write(r'            table, th, td{' + "\n")
-fileHandle.write(f'                border: 2px solid #cad670;\n')
-fileHandle.write(f'                border-radius: 5px;\n')
-fileHandle.write(r'            }' + "\n")
-fileHandle.write(f'        </style>\n\n')
-fileHandle.write(r'        <table style="width:550px">' + "\n")
-fileHandle.write(f'            <tr>\n')
-fileHandle.write(f'                <th>STR</th>\n')
-fileHandle.write(f'                <th>DEX</th>\n')
-fileHandle.write(f'                <th>CON</th>\n')
-fileHandle.write(f'                <th>INT</th>\n')
-fileHandle.write(f'                <th>WIS</th>\n')
-fileHandle.write(f'                <th>CHA</th>\n')
-fileHandle.write(f'            </tr>\n')
-fileHandle.write(f'            <tr>\n')
-fileHandle.write(rf'                <th onclick="RollItem({CalculateStat(stats[0])},{strCheck})" class="MonsterStatTableCell">{stats[0]} ({CalculateStat(stats[0])})</th>' + "\n")
-fileHandle.write(rf'                <th onclick="RollItem({CalculateStat(stats[1])},{dexCheck})" class="MonsterStatTableCell">{stats[1]} ({CalculateStat(stats[1])})</th>'+ "\n")
-fileHandle.write(rf'                <th onclick="RollItem({CalculateStat(stats[2])},{conCheck})" class="MonsterStatTableCell">{stats[2]} ({CalculateStat(stats[2])})</th>'+ "\n")
-fileHandle.write(rf'                <th onclick="RollItem({CalculateStat(stats[3])},{intCheck})" class="MonsterStatTableCell">{stats[3]} ({CalculateStat(stats[3])})</th>'+ "\n")
-fileHandle.write(rf'                <th onclick="RollItem({CalculateStat(stats[4])},{wisCheck})" class="MonsterStatTableCell">{stats[4]} ({CalculateStat(stats[4])})</th>'+ "\n")
-fileHandle.write(rf'                <th onclick="RollItem({CalculateStat(stats[5])},{chaCheck})" class="MonsterStatTableCell">{stats[5]} ({CalculateStat(stats[5])})</th>'+ "\n")
-fileHandle.write(f'            </tr>\n')
-fileHandle.write(f'            <tr>\n')
-fileHandle.write(rf'                <th onclick="RollItem({int(CalculateStat(stats[0])) + saveMods[0]},{strSave})" class="MonsterStatTableCell"> {CalculateModifier(stats[0], saveMods[0])}</th>'+ "\n")
-fileHandle.write(rf'                <th onclick="RollItem({int(CalculateStat(stats[1])) + saveMods[1]},{dexSave})" class="MonsterStatTableCell"> {CalculateModifier(stats[1], saveMods[1])}</th>'+ "\n")
-fileHandle.write(rf'                <th onclick="RollItem({int(CalculateStat(stats[2])) + saveMods[2]},{conSave})" class="MonsterStatTableCell"> {CalculateModifier(stats[2], saveMods[2])}</th>'+ "\n")
-fileHandle.write(rf'                <th onclick="RollItem({int(CalculateStat(stats[3])) + saveMods[3]},{intSave})" class="MonsterStatTableCell"> {CalculateModifier(stats[3], saveMods[3])}</th>'+ "\n")
-fileHandle.write(rf'                <th onclick="RollItem({int(CalculateStat(stats[4])) + saveMods[4]},{wisSave})" class="MonsterStatTableCell"> {CalculateModifier(stats[4], saveMods[4])}</th>'+ "\n")
-fileHandle.write(rf'                <th onclick="RollItem({int(CalculateStat(stats[5])) + saveMods[5]},{chaSave})" class="MonsterStatTableCell"> {CalculateModifier(stats[5], saveMods[5])}</th>'+ "\n")
-fileHandle.write(f'            </tr>\n')
-fileHandle.write(f'        </table>\n')
-fileHandle.write(f'    </div>\n\n')
-fileHandle.write(f'    <div class="MonsterAbilities">\n')
-fileHandle.write(f'        <p>\n')
-fileHandle.write(f'            <b>Saving Throws</b> {savingThrows}\n')
-fileHandle.write(f'            <b>Damage Vulnerabilities</b> {damageVulnerabilities}\n')
-fileHandle.write(f'            <b>Damage Resistances</b> {damageResistances}\n')
-fileHandle.write(f'            <b>Damage Immunities</b> {damageImmunities}\n')
-fileHandle.write(f'            <b>Condition Immunities</b> {conditionImmunities}\n')
-fileHandle.write(f'            <b>Senses</b> {senses}\n')
-fileHandle.write(f'            <b>Languages</b> {languages}\n')
-fileHandle.write(f'            <br><b>CR </b> {cr}           <b>Proficency Bonus</b> {profBonus}\n')
-fileHandle.write(f'        </p>\n')
-fileHandle.write(f'    </div>\n\n')
-fileHandle.write(f'    <div class="MonsterTraits">\n')
-fileHandle.write(f'        <p>\n')
+Armor Class 8
+Hit Points 22 (3d8 + 9)
+Speed 20 ft.
 
-for trait in traits:
-    fileHandle.write(rf'        <b>{trait[0]}<\b> {trait[1]}' + "\n")
+STR
+13 (+1)
+DEX
+6 (-2)
+CON
+16 (+3)
+INT
+3 (-4)
+WIS
+6 (-2)
+CHA
+5 (-3)
 
-fileHandle.write(f'        </p>\n')
-fileHandle.write(f'    </div>\n\n')
-fileHandle.write(rf'    <div class="MonsterActions">' + "\n")
-fileHandle.write(f'        <p>\n')
-for action in actions:
-    fileHandle.write(rf'        <b>{action[0]}<\b> {action[1]}' + "\n")
-fileHandle.write(f'        </p>\n')
-fileHandle.write(f'    </div>\n\n')
-fileHandle.write(f'    <div class = "RolledOutput" id = "RollOutput" onclick="RollItemDisappear()">\n')
-fileHandle.write(f'        <p>\n')
-fileHandle.write(f'            <b>Generated Number : </b>\n')
-fileHandle.write(f'        </p>\n')
-fileHandle.write(f'    </div>\n\n')
-fileHandle.write(f'</section>')
+Saving Throws WIS +0
+Damage Immunities Poison
+Condition Immunities Poisoned
+Senses Darkvision 60 ft., Passive Perception 8
+Languages understands the languages it knew in life but can't speak
+Challenge 1/4 (50 XP)
+Proficiency Bonus +2
 
-fileHandle.close()
+Traits Undead Fortitude. If damage reduces the zombie to 0 hit points, it must make a Constitution saving throw with a DC of 5 + the damage taken, unless the damage is radiant or from a critical hit. On a success, the zombie drops to 1 hit point instead.
+
+Actions
+Slam. Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 4 (1d6 + 1) bludgeoning damage."""
+
+
+# Extract data
+monster_data = extract_stat_block(monster_text)
+
+# Now generate HTML using the extracted data
+html_output = f"""
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>DND Website</title>
+        <link rel="stylesheet" href="DNDWebsite.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+    <body>
+        <section class="header">
+            <nav></nav> 
+            <h1>DND Website</h1><a href="DNDWebsite.html" class="ReturnBtn">Return Home</a>
+        </section>
+
+        <section class="MonsterDisplay">
+            <div class="MonsterGeneral">
+                <h1>{monster_data["name"]}</h1>
+                <h2><i>{monster_data['typeAlignment']}</i></h2>
+                <p><br><b>AC </b>{monster_data['AC']}
+                <br><b>Hit Points </b> {monster_data['hitPoints'][0]} <b onclick="RollItem(9, 'Health Points',  8, 3)" style="cursor: pointer;">({monster_data['hitPoints'][1]}d{monster_data['hitPoints'][2]} + {monster_data['hitPoints'][3]})</b>
+                <br><b>Speed </b> {monster_data['speed']}
+                </p>
+            </div>
+
+            <div class="MonsterStatTable">
+                <style>
+                    table, th, td {{
+                        border: 2px solid #cad670;
+                        border-radius: 5px;
+                    }}
+                </style>
+                <table style="width:550px">
+                    <tr>
+                        <th>STR</th>
+                        <th>DEX</th>
+                        <th>CON</th>
+                        <th>INT</th>
+                        <th>WIS</th>
+                        <th>CHA</th>
+                    </tr>
+                    <tr>
+                        <th onclick="RollItem({monster_data['stats'][0]}, 'STR Check')" class="MonsterStatTableCell">{monster_data['stats'][0]} ({monster_data['modifiers'][0]})</th>
+                        <th onclick="RollItem({monster_data['stats'][1]}, 'DEX Check')" class="MonsterStatTableCell">{monster_data['stats'][1]} ({monster_data['modifiers'][1]})</th>
+                        <th onclick="RollItem({monster_data['stats'][2]}, 'CON Check')" class="MonsterStatTableCell">{monster_data['stats'][2]} ({monster_data['modifiers'][2]})</th>
+                        <th onclick="RollItem({monster_data['stats'][3]}, 'INT Check')" class="MonsterStatTableCell">{monster_data['stats'][3]} ({monster_data['modifiers'][3]})</th>
+                        <th onclick="RollItem({monster_data['stats'][4]}, 'WIS Check')" class="MonsterStatTableCell">{monster_data['stats'][4]} ({monster_data['modifiers'][4]})</th>
+                        <th onclick="RollItem({monster_data['stats'][5]}, 'CHA Check')" class="MonsterStatTableCell">{monster_data['stats'][5]} ({monster_data['modifiers'][5]})</th>
+                    </tr>
+                    <tr>
+                        <th onclick="RollItem({monster_data['modifiers'][0]}, 'STR Save')" class="MonsterStatTableCell">{monster_data['modifiers'][0]}</th>
+                        <th onclick="RollItem({monster_data['modifiers'][1]}, 'DEX Save')" class="MonsterStatTableCell">{monster_data['modifiers'][1]}</th>
+                        <th onclick="RollItem({monster_data['modifiers'][2]}, 'CON Save')" class="MonsterStatTableCell">{monster_data['modifiers'][2]}</th>
+                        <th onclick="RollItem({monster_data['modifiers'][3]}, 'INT Save')" class="MonsterStatTableCell">{monster_data['modifiers'][3]}</th>
+                        <th onclick="RollItem({monster_data['modifiers'][4]}, 'WIS Save')" class="MonsterStatTableCell">{monster_data['modifiers'][4]}</th>
+                        <th onclick="RollItem({monster_data['modifiers'][5]}, 'CHA Save')" class="MonsterStatTableCell">{monster_data['modifiers'][5]}</th>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="MonsterAbilities">
+                <p>
+                    <b>Saving Throws</b> {monster_data['savingThrows']}
+                    <br><b>Damage Immunities</b> {monster_data['damageImmunities']}
+                    <br><b>Condition Immunities</b> {monster_data['conditionImmunities']}
+                    <br><b>Senses</b> Darkvision 60ft, Passive Perception 8
+                    <br><b>Languages</b> {monster_data['languages']}
+                    <br><b>CR </b> {monster_data['CR']}           <b>Proficency Bonus</b> {monster_data['proficiency_bonus']}
+                </p>
+                </p>
+            </div>
+
+            <div class="MonsterTraits">
+                <p>
+                    <b>Traits</b>
+                    <br>{''.join(monster_data['traits'])}
+                </p>
+            </div>
+
+            <div class="MonsterActions">
+                <p>
+                    <b>Actions</b>
+                    <br>{''.join(monster_data['actions'])}
+                </p>
+            </div>
+
+            
+            <div class = "RolledOutput" id = "RollOutput" onclick="RollItemDisappear()">
+                <p>
+                    <b>Generated Number : </b>
+                </p>
+            </div>
+
+        </section>
+        
+
+    </body>
+
+    <script>
+
+        var rollHTML = document.getElementById("RollOutput")
+
+
+        function RollItem(modifier, checkType, diceSides = 20, diceNum = 1){{
+            rolledValue = 0;
+            rolledValues = [];
+            for(let i = 0; i < diceNum; i++)
+            {{   
+                newValue = Math.trunc(Math.random() * diceSides) + 1
+                rolledValue += newValue;
+                rolledValues.push(newValue)
+                
+            }}
+              
+            rollHTML.innerHTML = `${{checkType}}: ${{String(rolledValue + modifier)}} (${{String(rolledValues)}})`;
+
+            rollHTML.style.right = "0";
+            rollHTML.style.visibility = "visible";
+        }}
+
+        function RollItemDisappear(){{
+            rollHTML.style.visibility = "hidden";
+            rollHTML.innerHTML = "Bye";
+        }}
+        
+
+    </script>
+
+</html>
+        </section>
+    </body>
+</html>
+"""
+
+# Save the generated HTML to a file
+with open("m2r.html", "w") as f:
+    f.write(html_output)
